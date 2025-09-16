@@ -4,6 +4,7 @@ import threading
 import uuid
 import traceback
 from datetime import datetime
+import time
 
 from pipeline import run_pipeline
 from database import db
@@ -15,7 +16,8 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit upload size to 16MB
 # Configuration for production
 app.config['DEBUG'] = False
 
-# results = {}
+# Background jobs tracker
+background_jobs = {}
 
 @app.route('/')
 def index():
@@ -70,7 +72,21 @@ def generate_faq():
         thread.daemon = True
         thread.start()
 
-        return jsonify({'job_id': job_id, 'status': 'processing'})
+        # Track the background job
+        background_jobs[job_id] = {
+            'thread': thread,
+            'start_time': time.time()
+        }
+
+        # Return immediately - don't wait for processing
+        return jsonify({
+            'job_id': job_id, 
+            'status': 'queued',
+            'message': 'FAQ generation started. Check status later with the job ID.',
+            'check_status_url': f'/status/{job_id}'
+        })
+
+        # return jsonify({'job_id': job_id, 'status': 'processing'})
     
     except Exception as e:
         return jsonify({'error': f"Server error: {str(e)}"}), 500
@@ -108,6 +124,7 @@ def process_faq_generation(job_id, url, platform, language, faq_count):
 
         # Run the pipeline
         out_file = f"output_{job_id}_faq.md"
+
         success = run_pipeline(
             url, 
             plf=platform,
@@ -161,6 +178,10 @@ def process_faq_generation(job_id, url, platform, language, faq_count):
             'data': None,
             'error': str(e)
         })
+    finally:
+        # Clean up job tracking
+        if job_id in background_jobs:
+            del background_jobs[job_id]
         
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
