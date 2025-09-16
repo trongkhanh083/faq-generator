@@ -4,3 +4,4 @@ output/
 .gitignore
 .env
 *.db
+*.json

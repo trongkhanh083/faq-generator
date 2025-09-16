@@ -59,7 +59,7 @@ def run_pipeline(url, plf, out_file=None, language="en", faq_count=10):
     logger.info(f"[2/3] Extracting structured data → {json_file}")
 
     html_files = []
-    for result_url, data in results.items():
+    for data in results.items():
         if data["success"] and os.path.exists(data["file"]):
             html_files.append(data["file"])
 
