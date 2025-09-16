@@ -1,64 +1,40 @@
-import sqlite3
+import redis
 import json
 import os
-from datetime import datetime, timedelta
-import threading
+from datetime import timedelta
 
-class SQLiteStorage:
+class RedisStorage:
     def __init__(self):
-        self.db_path = os.path.join(os.path.dirname(__file__), 'faq_jobs.db')
-        self._init_db()
-        self.lock = threading.Lock()
-
-    def _init_db(self):
-        with sqlite3.connect(self.db_path) as conn:
-            conn.execute('''
-                CREATE TABLE IF NOT EXISTS jobs (
-                    job_id TEXT PRIMARY KEY,
-                    result TEXT,
-                    created_at TIMESTAMP,
-                    expires_at TIMESTAMP
-                )
-            ''')
-            conn.commit()
+        self.redis_client = redis.Redis(
+            host=os.getenv('REDIS_HOST', 'localhost'),
+            port=int(os.getenv('REDIS_PORT', 6379)),
+            password=os.getenv('REDIS_PASSWORD', None),
+            db=int(os.getenv('REDIS_DB', 0)),
+            decode_responses=True
+        )
+        # Set default TTL to 24 hours
+        self.default_ttl = timedelta(hours=24)
 
     def store_result(self, job_id, result):
-        with self.lock:
-            with sqlite3.connect(self.db_path) as conn:
-                # Set expiration to 24 hours from now
-                expires_at = datetime.now() + timedelta(hours=24)
-                conn.execute(
-                    'INSERT OR REPLACE INTO jobs (job_id, result, created_at, expires_at) VALUES (?, ?, ?, ?)',
-                    (job_id, json.dumps(result), datetime.now().isoformat(), expires_at.isoformat())
-                )
-                conn.commit()
+        """Store result with expiration"""
+        self.redis_client.setex(
+            f"faq_job:{job_id}",
+            self.default_ttl,
+            json.dumps(result)
+        )
 
     def get_result(self, job_id):
-        with self.lock:
-            with sqlite3.connect(self.db_path) as conn:
-                # Clean up expired jobs first
-                conn.execute(
-                    'DELETE FROM jobs WHERE expires_at < ?',
-                    (datetime.now().isoformat(),)
-                )
-                conn.commit()
-                
-                # Get the job result
-                cursor = conn.execute(
-                    'SELECT result FROM jobs WHERE job_id = ?',
-                    (job_id,)
-                )
-                result = cursor.fetchone()
-                return json.loads(result[0]) if result else None
+        """Get result by job ID"""
+        result = self.redis_client.get(f"faq_job:{job_id}")
+        return json.loads(result) if result else None
 
     def delete_result(self, job_id):
-        with self.lock:
-            with sqlite3.connect(self.db_path) as conn:
-                conn.execute(
-                    'DELETE FROM jobs WHERE job_id = ?',
-                    (job_id,)
-                )
-                conn.commit()
+        """Delete result by job ID"""
+        self.redis_client.delete(f"faq_job:{job_id}")
+
+    def cleanup_expired(self):
+        """Clean up expired jobs (Redis handles this automatically with TTL)"""
+        pass
 
 # Singleton instance
-db = SQLiteStorage()
+db = RedisStorage()
