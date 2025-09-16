@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>Results</h3>
+                <a href="/" class="btn btn-outline-primary">New</a>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <strong>URL:</strong> {{ result.data.url }}<br>
+                    <strong>Platform:</strong> {{ result.data.platform }}<br>
+                    <strong>Language:</strong> {{ result.data.language }}<br>
+                    <strong>FAQs Generated:</strong> {{ result.data.faq_count }}
+                </div>
+                
+                <!-- Raw markdown content (hidden) -->
+                <textarea id="rawMarkdown" style="display: none;">{{ result.data.faq_content }}</textarea>
+                
+                <!-- Rendered markdown content -->
+                <div class="faq-content" id="renderedMarkdown"></div>
+                
+                <div class="mt-4 text-center">
+                    <button class="btn btn-success" onclick="downloadFAQ()">
+                        Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Render markdown when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const rawMarkdown = document.getElementById('rawMarkdown').value;
+    const renderedElement = document.getElementById('renderedMarkdown');
+    
+    // Configure marked options
+    marked.setOptions({
+        breaks: true,
+        gfm: true
+    });
+    
+    // Render markdown to HTML
+    renderedElement.innerHTML = marked.parse(rawMarkdown);
+});
+
+function downloadFAQ() {
+    const content = document.getElementById('rawMarkdown').value;
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'generated_faq.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

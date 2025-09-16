@@ -1,0 +1,9 @@
+flask
+requests
+python-dotenv
+playwright
+scrapegraphai
+openai
+uuid
+redis
+gunicorn
