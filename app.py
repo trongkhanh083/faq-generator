@@ -7,8 +7,8 @@ from datetime import datetime
 import time
 
 from pipeline import run_pipeline
-# from redis import db
-from sqlite import db
+# from redis_db import db
+from sqlite_db import db
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
