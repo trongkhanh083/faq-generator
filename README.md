@@ -42,6 +42,13 @@ Create environment variables .env:
 MISTRAL_API_KEY=your_mistral_api_key_here
 (other api key that you want)
 ```
+<h4>🎯 Inference</h4>
+
+Run pipeline
+```
+python pipeline.py --url [URL] --plf [fb/x/ig/df] --lang en --cnt 10
+```
+or
 
 Start development server
 ```
