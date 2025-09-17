@@ -4,6 +4,7 @@ import json
 import os
 import logging
 from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 load_dotenv()
 
@@ -11,6 +12,17 @@ MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Custom exception for rate limiting
+class RateLimitError(Exception):
+    pass
+
+# Add retry decorator for the scraper execution
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=4, max=60),
+    retry=retry_if_exception_type(RateLimitError)
+)
 
 def get_platform_specific_prompt(platform, language="en"):
     language_instructions = {
@@ -85,7 +97,7 @@ def combine_html_files(html_files, base_url):
     
     return combined_content
 
-def run_scraper(html_files, base_url, json_file, platform = "facebook", language="en"):
+def run_scraper_with_retry(html_files, base_url, json_file, platform="facebook", language="en"):
     try:
         # Validate platform
         valid_platforms = ["facebook", "x", "instagram", "default"]
@@ -110,8 +122,9 @@ def run_scraper(html_files, base_url, json_file, platform = "facebook", language
 
         graph_config = {
             "llm": {
-                "model": "mistralai/mistral-large-latest",
-                "api_key": MISTRAL_API_KEY
+                "model": "mistralai/mistral-small-2501",
+                "api_key": MISTRAL_API_KEY,
+                # "model_tokens": 8192
             }
         }
 
@@ -131,9 +144,16 @@ def run_scraper(html_files, base_url, json_file, platform = "facebook", language
         return True
 
     except Exception as e:
-        logger.error(f"Error in run_scraper: {e}")
-        return False
+        if "429" in str(e) or "capacity" in str(e).lower():
+            logger.warning(f"Rate limit hit, retrying... Error: {e}")
+        else:
+            logger.error(f"Error in run_scraper: {e}")
+            return False
 
+def run_scraper(html_files, base_url, json_file, platform="facebook", language="en"):
+    """Wrapper function with retry logic"""
+    return run_scraper_with_retry(html_files, base_url, json_file, platform, language)
+    
 if __name__ == "__main__":
     # run_scraper("diemthongnhat_fb.html", "https://www.facebook.com/diemthongnhat", "diemthongnhat_fb.json", "facebook")
     # Facebook example

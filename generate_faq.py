@@ -213,7 +213,7 @@ def run_faq(json_file, out_file, platform, language="en", faq_count=10):
         )
 
         response = client.chat.completions.create(
-            model="mistral-medium",
+            model="mistral-small-2501",
             messages=[
                 {"role": "system", "content": lang_prompt['system']},
                 {"role": "user", "content": prompt}

@@ -7,8 +7,8 @@ from datetime import datetime
 import time
 
 from pipeline import run_pipeline
-# from redis_db import db
-from sqlite_db import db
+from redis_db import db
+# from sqlite_db import db
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -116,7 +116,7 @@ def process_faq_generation(job_id, url, platform, language, faq_count):
         # Update progress
         db.store_result(job_id, {
             'status': 'processing',
-            'progress': 25,
+            'progress': 50,
             'message': 'Downloading page content...',
             'created_at': datetime.now().isoformat(),
             'data': None,

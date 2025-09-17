@@ -1,28 +1,110 @@
+/* Custom styles for enhanced appearance */
 body {
-    background-color: #f8f9fa;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
+    min-height: 100vh;
 }
 
-.card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border: 1px solid rgba(0, 0, 0, 0.125);
+/* Smooth transitions for all interactive elements */
+.btn, .form-control, .form-select, .card {
+    transition: all 0.3s ease;
 }
 
+/* Custom scrollbar for FAQ content */
 .faq-content {
-    background: #fff;
-    padding: 20px;
-    border-radius: 5px;
-    border: 1px solid #dee2e6;
-}
-
-.faq-content h1 {
-    color: #0d6efd;
-    margin-bottom: 20px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .faq-content strong {
-    color: #495057;
+    color: var(--primary) !important;
+    font-weight: 600 !important;
+    display: inline !important;
+    margin-bottom: 0 !important;
 }
 
-.progress {
-    height: 20px;
+.faq-content p {
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+}
+
+.faq-content p strong {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.faq-content em {
+    font-style: italic;
+    display: inline !important;
+}
+
+.faq-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.faq-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.faq-content::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+.faq-content::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.loading-pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Enhanced focus states for accessibility */
+.form-control:focus, .form-select:focus, .btn:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card {
+        margin: 0.5rem;
+    }
+    
+    .card-header h3 {
+        font-size: 1.25rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* Print styles for results */
+@media print {
+    .navbar, .btn, .result-metadata {
+        display: none !important;
+    }
+    
+    .faq-content {
+        max-height: none;
+        border: none;
+        padding: 0;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: none;
+    }
 }

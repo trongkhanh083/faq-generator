@@ -55,7 +55,7 @@ def run_pipeline(url, plf, out_file=None, language="en", faq_count=10):
     time.sleep(3)
 
     # 2. Scrape + clean
-    json_file = f"{output_dir}_{plf}_{language}.json"
+    json_file = f"{output_dir}_{plf}.json"
     logger.info(f"[2/3] Extracting structured data → {json_file}")
 
     html_files = []
