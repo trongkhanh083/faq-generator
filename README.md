@@ -24,8 +24,8 @@ A powerful Flask application that transforms social media content into comprehen
 
 Clone the repository
 ```
-git clone https://github.com/trongkhanh083/faq_generator.git
-cd faq_generator
+git clone https://github.com/trongkhanh083/faq-generator.git
+cd faq-generator
 ```
 
 Python dependencies
