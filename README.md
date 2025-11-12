@@ -39,8 +39,7 @@ playwright install
 ```
 Create environment variables .env:
 ```
-MISTRAL_API_KEY=your_mistral_api_key_here
-(other api key that you want)
+MISTRAL_API_KEY=your_mistral_api_key
 ```
 <h4>🎯 Inference</h4>
 
